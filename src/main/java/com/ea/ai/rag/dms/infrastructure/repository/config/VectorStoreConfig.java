@@ -1,4 +1,4 @@
-package com.ea.ai.rag.dms.presentation.config;
+package com.ea.ai.rag.dms.infrastructure.repository.config;
 
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.embedding.EmbeddingClient;
@@ -13,8 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import static org.springframework.ai.vectorstore.PgVectorStore.OPENAI_EMBEDDING_DIMENSION_SIZE;
 
 @Configuration
-public class VectorStoreEmbeddingClient {
-
+public class VectorStoreConfig {
     @Value("classpath:/ai/promptTemplate/rag-document-prompt-template.st")
     private Resource ragPromptTemplate;
 
@@ -29,12 +28,12 @@ public class VectorStoreEmbeddingClient {
      * @return
      */
     @Bean
-    public VectorStore vectorStore(JdbcTemplate jdbcTemplate, EmbeddingClient embeddingClient) {
+    public VectorStore ollamaRagVectorStore(JdbcTemplate jdbcTemplate, EmbeddingClient embeddingClient) {
         return new PgVectorStore(jdbcTemplate, embeddingClient, OPENAI_EMBEDDING_DIMENSION_SIZE);
     }
 
     @Bean
-    public PromptTemplate promptTemplate() {
+    public PromptTemplate ollamaRagPromptTemplate() {
         return new PromptTemplate(ragPromptTemplate);
     }
 }
