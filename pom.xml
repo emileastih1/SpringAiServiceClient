@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.2.1</version>
+		<version>3.4.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.ea.ai.rag</groupId>
@@ -15,7 +15,7 @@
 	<description>Spring AI chat DMS</description>
 	<properties>
 		<java.version>17</java.version>
-		<spring-ai.version>0.8.1</spring-ai.version>
+		<spring-ai.version>1.0.0</spring-ai.version>
 		<swagger-file>AiServiceClient-OpenApi</swagger-file>
 		<spring-boot.run.wait>120000</spring-boot.run.wait>
 	</properties>
@@ -32,30 +32,21 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
-		<!-- Spring AI Open AI manual integration-->
-		<dependency>
-			<groupId>org.springframework.ai</groupId>
-			<artifactId>spring-ai-openai</artifactId>
-			<version>${spring-ai.version}</version>
-		</dependency>
-		<!-- Spring AI Ollama manual integration -->
+
+		<!-- Spring AI Ollama -->
 		<dependency>
 			<groupId>org.springframework.ai</groupId>
 			<artifactId>spring-ai-ollama</artifactId>
-			<version>${spring-ai.version}</version>
 		</dependency>
-		<!-- Spring AI PGVector store manual integration-->
+		<!-- Spring AI PGVector store -->
 		<dependency>
 			<groupId>org.springframework.ai</groupId>
 			<artifactId>spring-ai-pgvector-store</artifactId>
-			<version>${spring-ai.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.ai</groupId>
 			<artifactId>spring-ai-tika-document-reader</artifactId>
-			<version>${spring-ai.version}</version>
 		</dependency>
-		<!-- End Spring AI -->
 
 		<dependency>
 			<groupId>org.postgresql</groupId>
@@ -72,28 +63,27 @@
 		<dependency>
 			<groupId>net.lbruun.springboot</groupId>
 			<artifactId>preliquibase-spring-boot-starter</artifactId>
-			<version>1.5.0</version>
+			<version>1.5.1</version>
 		</dependency>
 
-		<!-- OpenAPI v3 and Swagger support-->
-		<!-- They are both included in this dependency -->
+		<!-- OpenAPI v3 and Swagger support -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			<version>2.3.0</version>
+			<version>2.8.3</version>
 		</dependency>
 
 		<!-- tools -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.30</version>
+			<version>1.18.36</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct</artifactId>
-			<version>1.5.5.Final</version>
+			<version>1.6.2</version>
 		</dependency>
 
 		<!-- Actuator health check -->
@@ -113,7 +103,25 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- Testcontainers -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-testcontainers</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -157,13 +165,13 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.11.0</version>
+				<version>3.13.0</version>
 				<configuration>
 					<annotationProcessorPaths>
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
-							<version>1.18.30</version>
+							<version>1.18.36</version>
 						</path>
 						<path>
 							<groupId>org.projectlombok</groupId>
@@ -173,7 +181,7 @@
 						<path>
 							<groupId>org.mapstruct</groupId>
 							<artifactId>mapstruct-processor</artifactId>
-							<version>1.6.0.Beta1</version>
+							<version>1.6.2</version>
 						</path>
 					</annotationProcessorPaths>
 					<compilerArgs>
@@ -184,7 +192,7 @@
 				</configuration>
 			</plugin>
 
-			<!-- OpenAPI v3 and Swagger support-->
+			<!-- OpenAPI v3 and Swagger support -->
 			<plugin>
 				<groupId>org.springdoc</groupId>
 				<artifactId>springdoc-openapi-maven-plugin</artifactId>
@@ -204,9 +212,33 @@
 					</execution>
 				</executions>
 			</plugin>
-
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>windows-docker-desktop</id>
+			<activation>
+				<os>
+					<family>windows</family>
+				</os>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<configuration>
+							<environmentVariables>
+								<DOCKER_HOST>npipe:////./pipe/dockerDesktopLinuxEngine</DOCKER_HOST>
+							</environmentVariables>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 	<repositories>
 		<repository>
 			<id>spring-milestones</id>
@@ -215,14 +247,6 @@
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
-		</repository>
-		<repository>
-			<id>spring-snapshots</id>
-			<name>Spring Snapshots</name>
-			<url>https://repo.spring.io/snapshot</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
 		</repository>
 	</repositories>
 

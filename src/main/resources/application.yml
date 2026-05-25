@@ -3,20 +3,18 @@ ai-client:
     base-url: http://localhost:11434
     chat:
       options:
-#        model: llama2 or gemma:2b
-        model: gemma:2b
+        model: gemma3:4b
         temperature: 0.7
-  openai:
-    api-key: ${OPENAI_API_KEY}
-    chat:
-      model: gpt-3.5-turbo-1106
-      temperature: 0.7
-      max-tokens: 200
+    embedding:
+      options:
+        model: mxbai-embed-large
 server:
   port: 8086
   servlet:
     context-path: /AiServiceClient
 spring:
+  profiles:
+    active: ollama
   datasource:
     url: jdbc:postgresql://localhost:5434/doc_management_db
     username: postgres
