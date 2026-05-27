@@ -2,7 +2,7 @@ package com.ea.ai.rag.dms.infrastructure.repository.config.aiClient.ollama.rag;
 
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.api.OllamaApi;
-import org.springframework.ai.ollama.api.OllamaOptions;
+import org.springframework.ai.ollama.api.OllamaChatOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,7 +25,7 @@ public class OllamaRagClientConfig {
     OllamaChatModel ollamaRagChatModel() {
         return OllamaChatModel.builder()
                 .ollamaApi(ollamaRagApi())
-                .defaultOptions(OllamaOptions.builder()
+                .defaultOptions(OllamaChatOptions.builder()
                         .model(ollamaOptionsModelName)
                         .temperature(ollamaOptionsTemperature)
                         .build())
