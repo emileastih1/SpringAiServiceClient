@@ -2,13 +2,11 @@ CREATE ROLE doc_management_user WITH LOGIN PASSWORD 'toor';
 CREATE SCHEMA IF NOT EXISTS vectorcontent;
 
 CREATE EXTENSION IF NOT EXISTS vector;
-CREATE EXTENSION IF NOT EXISTS hstore;
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS vectorcontent.vector_store (
-    id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     content text,
-    metadata json,
+    metadata jsonb,
     embedding vector(1024)
 );
 
