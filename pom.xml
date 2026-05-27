@@ -147,6 +147,7 @@
 							<artifactId>lombok</artifactId>
 						</exclude>
 					</excludes>
+					<useTestClasspath>false</useTestClasspath>
 				</configuration>
 				<executions>
 					<execution>
