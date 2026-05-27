@@ -29,7 +29,7 @@ spring:
       default_schema: vectorcontent
     show-sql: true
   liquibase:
-    change-log: classpath:db/changelog/DocumentContent-DOC_MANAGEMENT_DB/changeLog-master.xml
+    change-log: classpath:db/changelog/DocumentContent-DOC_MANAGEMENT_DB/changelog-master.xml
     default-schema: vectorcontent
 spring-doc:
   swagger-ui:

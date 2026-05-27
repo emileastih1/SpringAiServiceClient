@@ -18,6 +18,7 @@
 		<spring-ai.version>1.0.0</spring-ai.version>
 		<swagger-file>AiServiceClient-OpenApi</swagger-file>
 		<spring-boot.run.wait>120000</spring-boot.run.wait>
+		<testcontainers.version>1.21.0</testcontainers.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -230,7 +231,8 @@
 						<artifactId>maven-surefire-plugin</artifactId>
 						<configuration>
 							<environmentVariables>
-								<DOCKER_HOST>npipe:////./pipe/dockerDesktopLinuxEngine</DOCKER_HOST>
+								<DOCKER_HOST>tcp://localhost:2375</DOCKER_HOST>
+								<DOCKER_API_VERSION>1.44</DOCKER_API_VERSION>
 							</environmentVariables>
 						</configuration>
 					</plugin>
