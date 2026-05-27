@@ -3,6 +3,11 @@
 Spring Boot 3.4.5 + Spring AI 1.0.0 RAG service (DMS — Document Management Service).
 Issue tracker: `github.com/emileastih1/Intelligent_Content_Management`.
 
+## Upcoming work (this branch)
+
+This branch tracks **issue #25** — Spring Boot 4.x + Java 21 upgrade.
+**Blocked by issue #24** (human version gate). Do not implement until #24 is resolved with human approval and confirmed GA version numbers.
+
 ## Stack
 
 - Spring Boot 3.4.5, Spring AI 1.0.0, Java 17
