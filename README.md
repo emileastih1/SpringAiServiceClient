@@ -53,7 +53,7 @@ Foundational mistakes in `release1` and `release2` (wrong extension schema, wron
 | PostgreSQL + pgvector | 16 | Vector store (`vectorcontent` schema) |
 | Liquibase | — | Schema migrations |
 | Testcontainers | 1.21.0 | Integration test infrastructure |
-| Docker Compose | — | Local PostgreSQL orchestration |
+| Docker (pgvector/pgvector:pg16) | — | Local PostgreSQL orchestration |
 
 ## Getting Started
 
@@ -64,14 +64,21 @@ Foundational mistakes in `release1` and `release2` (wrong extension schema, wron
 ollama pull gemma3:4b
 ollama pull mxbai-embed-large
 
-# 2. Start PostgreSQL
-docker compose up -d
+# 2. Start PostgreSQL with pgvector (port 5434, database doc_management_db)
+docker run -d --name dms-postgres \
+  -e POSTGRES_PASSWORD=toor \
+  -e POSTGRES_DB=doc_management_db \
+  -p 5434:5432 \
+  pgvector/pgvector:pg16
 
-# 3. Run the application
+# 3. Run the application (ollama profile is active by default)
 ./mvnw spring-boot:run
 
 # 4. Explore the API
-# http://localhost:8086/AiServiceClient/swagger-ui.html
+# http://localhost:8086/AiServiceClient/swagger-ui/index.html
+
+# 5. Verify the service is up
+# curl http://localhost:8086/AiServiceClient/actuator/health
 ```
 
 This service is a backend dependency of `intelligent-content-management`. See the [intelligent-content-management README](https://github.com/emileastih1/Intelligent_Content_Management) for the full system setup.
@@ -80,7 +87,7 @@ This service is a backend dependency of `intelligent-content-management`. See th
 
 | | |
 |---|---|
-| Swagger UI | http://localhost:8086/AiServiceClient/swagger-ui.html |
+| Swagger UI | http://localhost:8086/AiServiceClient/swagger-ui/index.html |
 | Context path | `/AiServiceClient` |
 | Auth | None — called service-to-service from `intelligent-content-management` |
 
