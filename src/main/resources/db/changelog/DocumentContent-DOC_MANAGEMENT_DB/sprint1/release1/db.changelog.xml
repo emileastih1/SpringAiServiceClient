@@ -5,16 +5,6 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <changeSet id="set_search_path" author="eas" failOnError="true">
-        <comment>set search path for postgres</comment>
-        <sqlFile
-                path="db/changelog/DocumentContent-DOC_MANAGEMENT_DB/sprint1/release1/privileges/DATABASE-DDL-SEARCH-PATH.sql"
-                splitStatements="true"
-                stripComments="true"
-                encoding="UTF-8"
-        />
-    </changeSet>
-
     <changeSet id="create_vector_extension" author="eas" failOnError="true">
         <comment>create vector db extension</comment>
         <sqlFile
