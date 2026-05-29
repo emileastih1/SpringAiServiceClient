@@ -19,6 +19,10 @@ spring:
     url: jdbc:postgresql://localhost:5434/dms_db?currentSchema=vectorcontent
     username: postgres
     password: toor
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/init/schema.sql
   jpa:
     hibernate:
       ddl-auto: none

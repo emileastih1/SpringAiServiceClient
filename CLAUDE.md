@@ -9,7 +9,7 @@ Issue tracker: `github.com/emileastih1/Intelligent_Content_Management`.
 - Ollama (local) with `gemma3:4b` (chat) + `mxbai-embed-large` (embeddings, 1024 dims)
 - PostgreSQL + pgvector via `pgvector/pgvector:pg16`
 - Liquibase for schema migrations (schema: `vectorcontent`, table: `vector_store`)
-- preliquibase 1.5.1 for pre-migration schema creation (excluded in test classpath — see below)
+- `spring.sql.init` for pre-migration schema creation (`db/init/schema.sql` runs before Liquibase)
 
 ## Running tests
 
@@ -37,15 +37,9 @@ docker.host=npipe:////./pipe/docker_cli
 
 Testcontainers is pinned at **1.21.0** (`<testcontainers.version>1.21.0</testcontainers.version>` in `pom.xml`) to ensure compatibility with Docker Desktop 29.x.
 
-## preliquibase exclusion in tests
+## Schema creation in tests
 
-preliquibase 1.5.1 uses reflection to locate `LiquibaseAutoConfiguration$LiquibaseConfiguration.liquibase()`. Spring Boot 4.x changed the auto-configuration structure, causing instantiation failure in tests.
-
-**Workaround for tests:**
-- `src/test/resources/application-ollama.yml` excludes `PreLiquibaseAutoConfiguration` via `spring.autoconfigure.exclude`
-- `src/test/resources/test-init.sql` creates the `vectorcontent` schema (replaces preliquibase's role in the test container)
-
-The main application (`src/main/resources/preliquibase/postgresql.sql`) still handles schema creation at runtime — do not remove it.
+`spring.sql.init` (`db/init/schema.sql`) creates the `vectorcontent` schema before Liquibase runs. In Testcontainer-based tests, `test-init.sql` (applied via `.withInitScript`) performs the same creation at the container level — both are idempotent (`CREATE SCHEMA IF NOT EXISTS`).
 
 ## Active profiles
 

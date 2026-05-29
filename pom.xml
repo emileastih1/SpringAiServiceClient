@@ -55,18 +55,12 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- Database versioning -->
+		<!-- Database versioning — spring-boot-starter-liquibase brings spring-boot-liquibase
+		     (LiquibaseAutoConfiguration) which was split out of spring-boot-autoconfigure in Spring Boot 4.x -->
 		<dependency>
-			<groupId>org.liquibase</groupId>
-			<artifactId>liquibase-core</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-liquibase</artifactId>
 		</dependency>
-		<!-- preliquibase script start -->
-		<dependency>
-			<groupId>net.lbruun.springboot</groupId>
-			<artifactId>preliquibase-spring-boot-starter</artifactId>
-			<version>1.5.1</version>
-		</dependency>
-
 		<!-- OpenAPI v3 and Swagger support -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
