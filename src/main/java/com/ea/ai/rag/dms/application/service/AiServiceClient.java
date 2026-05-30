@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
+
 @Service
 @Transactional
 public interface AiServiceClient {
@@ -15,4 +17,10 @@ public interface AiServiceClient {
     void addDocumentToVectorStore(Document document);
 
     Flux<String> streamAnswer(Question question, int topK, Double temperature);
+
+    Flux<String> streamAnswer(Question question, int topK, Double temperature, List<Long> documentIds);
+
+    void deleteChunksByDocumentId(long documentId);
+
+    String classifySentiment(String content);
 }

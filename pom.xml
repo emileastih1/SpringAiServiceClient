@@ -55,6 +55,14 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- Pin commons-compress to ensure Tika 3.x can resolve ZipArchiveInputStream.getNextEntry()
+		     returning ZipArchiveEntry (requires >= 1.21 with generic ArchiveInputStream<E>). -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-compress</artifactId>
+			<version>1.27.1</version>
+		</dependency>
+
 		<!-- Database versioning — spring-boot-starter-liquibase brings spring-boot-liquibase
 		     (LiquibaseAutoConfiguration) which was split out of spring-boot-autoconfigure in Spring Boot 4.x -->
 		<dependency>

@@ -14,6 +14,9 @@ public class Document {
 
     private long id;
 
+    /** ICM's DocumentAggregate.id — used to tag vector-store chunks for scoped retrieval (ADR-0007). */
+    private Long documentId;
+
     @NotEmpty(message = "Document name is mandatory")
     @Schema(description = "Name of the document", example = "Test Document", requiredMode = Schema.RequiredMode.REQUIRED)
     private String documentName;

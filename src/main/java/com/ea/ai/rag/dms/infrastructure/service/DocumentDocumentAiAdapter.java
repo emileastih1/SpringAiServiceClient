@@ -8,6 +8,8 @@ import com.ea.ai.rag.dms.infrastructure.repository.DocumentAiRepository;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
+
 @Service
 public class DocumentDocumentAiAdapter implements DocumentAiClientRepository {
     DocumentAiRepository documentAiRepository;
@@ -29,5 +31,20 @@ public class DocumentDocumentAiAdapter implements DocumentAiClientRepository {
     @Override
     public Flux<String> streamAnswer(Question question, int topK, Double temperature) {
         return documentAiRepository.streamAnswer(question, topK, temperature);
+    }
+
+    @Override
+    public Flux<String> streamAnswer(Question question, int topK, Double temperature, List<Long> documentIds) {
+        return documentAiRepository.streamAnswer(question, topK, temperature, documentIds);
+    }
+
+    @Override
+    public void deleteChunksByDocumentId(long documentId) {
+        documentAiRepository.deleteChunksByDocumentId(documentId);
+    }
+
+    @Override
+    public String classifySentiment(String content) {
+        return documentAiRepository.classifySentiment(content);
     }
 }

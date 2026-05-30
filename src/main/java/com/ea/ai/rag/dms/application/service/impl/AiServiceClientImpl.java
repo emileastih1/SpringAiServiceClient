@@ -8,6 +8,8 @@ import com.ea.ai.rag.dms.domain.vo.ai.Question;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
+
 @Service
 public class AiServiceClientImpl implements AiServiceClient {
 
@@ -30,5 +32,20 @@ public class AiServiceClientImpl implements AiServiceClient {
     @Override
     public Flux<String> streamAnswer(Question question, int topK, Double temperature) {
         return documentAiClientRepository.streamAnswer(question, topK, temperature);
+    }
+
+    @Override
+    public Flux<String> streamAnswer(Question question, int topK, Double temperature, List<Long> documentIds) {
+        return documentAiClientRepository.streamAnswer(question, topK, temperature, documentIds);
+    }
+
+    @Override
+    public void deleteChunksByDocumentId(long documentId) {
+        documentAiClientRepository.deleteChunksByDocumentId(documentId);
+    }
+
+    @Override
+    public String classifySentiment(String content) {
+        return documentAiClientRepository.classifySentiment(content);
     }
 }
