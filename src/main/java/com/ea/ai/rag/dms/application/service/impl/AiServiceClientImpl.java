@@ -6,6 +6,7 @@ import com.ea.ai.rag.dms.domain.repository.DocumentAiClientRepository;
 import com.ea.ai.rag.dms.domain.vo.ai.Answer;
 import com.ea.ai.rag.dms.domain.vo.ai.Question;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
 @Service
 public class AiServiceClientImpl implements AiServiceClient {
@@ -24,5 +25,10 @@ public class AiServiceClientImpl implements AiServiceClient {
     @Override
     public void addDocumentToVectorStore(Document document) {
         documentAiClientRepository.addDocumentToVectorStore(document);
+    }
+
+    @Override
+    public Flux<String> streamAnswer(Question question, int topK, Double temperature) {
+        return documentAiClientRepository.streamAnswer(question, topK, temperature);
     }
 }

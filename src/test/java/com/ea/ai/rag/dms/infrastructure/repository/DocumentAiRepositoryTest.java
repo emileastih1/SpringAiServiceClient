@@ -7,10 +7,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 import java.util.Map;
@@ -106,5 +109,48 @@ class DocumentAiRepositoryTest {
         documentAiRepository.askQuestion(question, 5, null);
 
         assertThat(captor.getValue().getTopK()).isEqualTo(5);
+    }
+
+    @Test
+    void askQuestion_streams_tokens_with_done_sentinel() {
+        var doc = new org.springframework.ai.document.Document("Alex has 6 years Java experience.");
+        when(vectorStore.similaritySearch(any(SearchRequest.class))).thenReturn(List.of(doc));
+
+        Prompt prompt = mock(Prompt.class);
+        when(promptTemplate.create(anyMap())).thenReturn(prompt);
+        when(prompt.getInstructions()).thenReturn(List.of());
+
+        // Mock chatModel.stream() to return Flux<ChatResponse>
+        var generation = mock(Generation.class);
+        var output = mock(org.springframework.ai.chat.messages.AssistantMessage.class);
+        when(output.getText()).thenReturn("6 years");
+        when(generation.getOutput()).thenReturn(output);
+        var chatResponse = mock(ChatResponse.class);
+        when(chatResponse.getResult()).thenReturn(generation);
+        when(chatModel.stream(any(Prompt.class))).thenReturn(reactor.core.publisher.Flux.just(chatResponse));
+
+        Flux<String> result = documentAiRepository.streamAnswer(new Question("How many years?"), 2, null);
+        List<String> tokens = result.collectList().block();
+
+        assertThat(tokens).contains("6 years");
+        assertThat(tokens).last().isEqualTo("[DONE]");
+    }
+
+    @Test
+    void askQuestion_emits_stream_error_sentinel_on_failure() {
+        var doc = new org.springframework.ai.document.Document("content");
+        when(vectorStore.similaritySearch(any(SearchRequest.class))).thenReturn(List.of(doc));
+
+        Prompt prompt = mock(Prompt.class);
+        when(promptTemplate.create(anyMap())).thenReturn(prompt);
+        when(prompt.getInstructions()).thenReturn(List.of());
+
+        when(chatModel.stream(any(Prompt.class))).thenReturn(
+                reactor.core.publisher.Flux.error(new RuntimeException("Ollama failure")));
+
+        Flux<String> result = documentAiRepository.streamAnswer(new Question("Q?"), 2, null);
+        List<String> tokens = result.collectList().block();
+
+        assertThat(tokens).contains("[STREAM_ERROR]");
     }
 }

@@ -17,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import reactor.core.publisher.Flux;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -27,6 +28,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -51,15 +53,16 @@ class AiServiceClientRestControllerTest {
     }
 
     @Test
-    void askQuestion_withValidQuestion_returns200WithAnswer() throws Exception {
+    void askQuestion_withValidQuestion_returns200WithStreamedTokens() throws Exception {
         Question question = new Question("What is the document about?");
-        when(aiServiceClient.askQuestion(any(Question.class), anyInt(), any())).thenReturn(new Answer("The document is about testing."));
+        when(aiServiceClient.streamAnswer(any(Question.class), anyInt(), any()))
+                .thenReturn(Flux.just("The document is about testing.", "[DONE]"));
 
         mockMvc.perform(post("/v1/document/ask")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(question)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.answer").value("The document is about testing."));
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM));
     }
 
     @Test
@@ -73,40 +76,42 @@ class AiServiceClientRestControllerTest {
     }
 
     @Test
-    void askQuestion_whenServiceThrowsFunctionalException_returns400WithErrorCode() throws Exception {
+    void askQuestion_whenServiceThrowsFunctionalException_emitsStreamError() throws Exception {
         Question question = new Question("What is the document about?");
-        when(aiServiceClient.askQuestion(any(Question.class), anyInt(), any()))
-                .thenThrow(new FunctionalException(MessageCode.DOCUMENT_NOT_FOUND, "Document not found"));
+        when(aiServiceClient.streamAnswer(any(Question.class), anyInt(), any()))
+                .thenReturn(Flux.just("[STREAM_ERROR]"));
 
         mockMvc.perform(post("/v1/document/ask")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(question)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errorCode").value("DOCUMENT_NOT_FOUND"));
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM));
     }
 
     @Test
     void askQuestion_withNoTopKParam_defaultsTopKToTwo() throws Exception {
-        when(aiServiceClient.askQuestion(any(Question.class), anyInt(), any())).thenReturn(new Answer("answer"));
+        when(aiServiceClient.streamAnswer(any(Question.class), anyInt(), any()))
+                .thenReturn(Flux.just("answer", "[DONE]"));
 
         mockMvc.perform(post("/v1/document/ask")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"question\":\"What is this?\"}"))
                 .andExpect(status().isOk());
 
-        verify(aiServiceClient).askQuestion(any(Question.class), eq(2), isNull());
+        verify(aiServiceClient).streamAnswer(any(Question.class), eq(2), isNull());
     }
 
     @Test
     void askQuestion_withTopKParam_passesTopKToService() throws Exception {
-        when(aiServiceClient.askQuestion(any(Question.class), anyInt(), any())).thenReturn(new Answer("answer"));
+        when(aiServiceClient.streamAnswer(any(Question.class), anyInt(), any()))
+                .thenReturn(Flux.just("answer", "[DONE]"));
 
         mockMvc.perform(post("/v1/document/ask?topK=5")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"question\":\"What is this?\"}"))
                 .andExpect(status().isOk());
 
-        verify(aiServiceClient).askQuestion(any(Question.class), eq(5), isNull());
+        verify(aiServiceClient).streamAnswer(any(Question.class), eq(5), isNull());
     }
 
     @Test

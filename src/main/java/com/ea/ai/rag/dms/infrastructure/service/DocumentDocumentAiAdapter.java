@@ -6,6 +6,7 @@ import com.ea.ai.rag.dms.domain.vo.ai.Answer;
 import com.ea.ai.rag.dms.domain.vo.ai.Question;
 import com.ea.ai.rag.dms.infrastructure.repository.DocumentAiRepository;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
 @Service
 public class DocumentDocumentAiAdapter implements DocumentAiClientRepository {
@@ -14,6 +15,7 @@ public class DocumentDocumentAiAdapter implements DocumentAiClientRepository {
     public DocumentDocumentAiAdapter(DocumentAiRepository documentAiRepository) {
         this.documentAiRepository = documentAiRepository;
     }
+
     @Override
     public Answer askQuestion(Question question, int topK, Double temperature) {
         return documentAiRepository.askQuestion(question, topK, temperature);
@@ -22,5 +24,10 @@ public class DocumentDocumentAiAdapter implements DocumentAiClientRepository {
     @Override
     public void addDocumentToVectorStore(Document document) {
         documentAiRepository.addDocumentToVectorStore(document);
+    }
+
+    @Override
+    public Flux<String> streamAnswer(Question question, int topK, Double temperature) {
+        return documentAiRepository.streamAnswer(question, topK, temperature);
     }
 }

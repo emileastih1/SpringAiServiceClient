@@ -15,6 +15,7 @@ import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 
 import java.util.HashMap;
 import java.util.List;
@@ -64,5 +65,36 @@ public class DocumentAiRepository {
         } else {
             return new Answer("Sorry, I don't have an answer for that question");
         }
+    }
+
+    public Flux<String> streamAnswer(Question question, int topK, Double temperature) {
+        List<org.springframework.ai.document.Document> similarDocuments = vectorStore.similaritySearch(
+                SearchRequest.builder().query(question.question()).topK(topK).build());
+
+        if (similarDocuments == null || similarDocuments.isEmpty()) {
+            return Flux.just("Sorry, I don't have an answer for that question", "[DONE]");
+        }
+
+        List<String> contentList = similarDocuments.stream()
+                .map(org.springframework.ai.document.Document::getText)
+                .toList();
+        Map<String, Object> promptParameters = new HashMap<>();
+        promptParameters.put("input", question.question());
+        promptParameters.put("documents", String.join("\n", contentList));
+        Prompt prompt = promptTemplate.create(promptParameters);
+
+        Flux<ChatResponse> responseFlux;
+        if (temperature != null) {
+            responseFlux = chatModel.stream(new Prompt(prompt.getInstructions(),
+                    OllamaChatOptions.builder().temperature(temperature).build()));
+        } else {
+            responseFlux = chatModel.stream(prompt);
+        }
+
+        return responseFlux
+                .map(r -> r.getResult().getOutput().getText())
+                .filter(text -> text != null && !text.isEmpty())
+                .concatWith(Flux.just("[DONE]"))
+                .onErrorResume(e -> Flux.just("[STREAM_ERROR]"));
     }
 }

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 
 @Tag(name = "AiServiceClient", description = "API gateway for the AI Service Client")
 @RestController
@@ -32,19 +33,17 @@ public class AiServiceClientRestController {
     }
     @Operation(
             summary = "Ask a relevant question",
-            description = "Ask a relevant question",
+            description = "Ask a relevant question (streaming SSE response)",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "ok", content = @Content(
-                            schema = @Schema(implementation = Answer.class)
-                    ))
+                    @ApiResponse(responseCode = "200", description = "ok")
             }
     )
-    @PostMapping(value = "/v1/document/ask", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Answer> askQuestion(
+    @PostMapping(value = "/v1/document/ask", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> askQuestion(
             @RequestBody @Valid Question question,
             @RequestParam(defaultValue = "2") int topK,
             @RequestParam(required = false) Double temperature) {
-        return new ResponseEntity<>(aiServiceClient.askQuestion(question, topK, temperature), HttpStatus.OK);
+        return aiServiceClient.streamAnswer(question, topK, temperature);
     }
 
     @Operation(
