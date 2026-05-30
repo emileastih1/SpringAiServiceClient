@@ -137,6 +137,49 @@ class DocumentAiRepositoryTest {
     }
 
     @Test
+    void addDocumentToVectorStore_splitsLargeDocumentIntoMultipleChunks() {
+        String largeText = "The candidate has extensive professional experience in software engineering. "
+                .repeat(400);
+        Document document = new Document();
+        document.setDocumentName("large-cv.txt");
+        document.setFile(largeText.getBytes());
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<org.springframework.ai.document.Document>> captor =
+                ArgumentCaptor.forClass(List.class);
+
+        documentAiRepository.addDocumentToVectorStore(document);
+
+        verify(vectorStore).add(captor.capture());
+        assertThat(captor.getValue())
+                .as("Large document must be split into more than one chunk")
+                .hasSizeGreaterThan(1);
+    }
+
+    @Test
+    void addDocumentToVectorStore_chunksFitEmbeddingModelContextWindow() {
+        // mxbai-embed-large has a 512-token context window (~3789 chars for this text density, ~7.4 chars/token).
+        // chunkSize(400) produces ~3100-char chunks (~416 tokens); we assert ≤ 3500 chars as the safe upper bound.
+        String largeText = "The candidate has extensive professional experience in software engineering. "
+                .repeat(400);
+        Document document = new Document();
+        document.setDocumentName("large-cv.txt");
+        document.setFile(largeText.getBytes());
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<org.springframework.ai.document.Document>> captor =
+                ArgumentCaptor.forClass(List.class);
+
+        documentAiRepository.addDocumentToVectorStore(document);
+
+        verify(vectorStore).add(captor.capture());
+        captor.getValue().forEach(chunk ->
+                assertThat(chunk.getText().length())
+                        .as("Chunk must not exceed mxbai-embed-large context window")
+                        .isLessThanOrEqualTo(3500));
+    }
+
+    @Test
     void askQuestion_emits_stream_error_sentinel_on_failure() {
         var doc = new org.springframework.ai.document.Document("content");
         when(vectorStore.similaritySearch(any(SearchRequest.class))).thenReturn(List.of(doc));

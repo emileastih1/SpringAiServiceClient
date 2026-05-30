@@ -39,7 +39,12 @@ public class DocumentAiRepository {
         TikaDocumentReader tikaDocumentReader = new TikaDocumentReader(byteArrayResource);
         List<org.springframework.ai.document.Document> documents = tikaDocumentReader.get();
 
-        TextSplitter textSplitter = new TokenTextSplitter();
+        TextSplitter textSplitter = TokenTextSplitter.builder()
+                .withChunkSize(400)
+                .withMinChunkSizeChars(50)
+                .withMaxNumChunks(1000)
+                .withKeepSeparator(true)
+                .build();
         List<org.springframework.ai.document.Document> splitDocuments = textSplitter.apply(documents);
         vectorStore.add(splitDocuments);
     }
