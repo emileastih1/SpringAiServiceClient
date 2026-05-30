@@ -7,6 +7,7 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
+import org.springframework.ai.ollama.api.OllamaChatOptions;
 import org.springframework.ai.reader.tika.TikaDocumentReader;
 import org.springframework.ai.transformer.splitter.TextSplitter;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
@@ -42,9 +43,9 @@ public class DocumentAiRepository {
         vectorStore.add(splitDocuments);
     }
 
-    public Answer askQuestion(Question question) {
+    public Answer askQuestion(Question question, int topK, Double temperature) {
         List<org.springframework.ai.document.Document> similarDocuments = vectorStore.similaritySearch(
-                SearchRequest.builder().query(question.question()).topK(2).build());
+                SearchRequest.builder().query(question.question()).topK(topK).build());
 
         if (similarDocuments != null && !similarDocuments.isEmpty()) {
             List<String> contentList = similarDocuments.stream()
@@ -54,6 +55,10 @@ public class DocumentAiRepository {
             promptParameters.put("input", question.question());
             promptParameters.put("documents", String.join("\n", contentList));
             Prompt prompt = promptTemplate.create(promptParameters);
+            if (temperature != null) {
+                prompt = new Prompt(prompt.getInstructions(),
+                        OllamaChatOptions.builder().temperature(temperature).build());
+            }
             ChatResponse response = chatModel.call(prompt);
             return new Answer(response.getResult().getOutput().getText());
         } else {

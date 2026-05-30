@@ -57,7 +57,7 @@ class DocumentAiRepositoryIT {
 
         repository.addDocumentToVectorStore(document);
 
-        Answer answer = repository.askQuestion(new Question("Where is the Eiffel Tower located?"));
+        Answer answer = repository.askQuestion(new Question("Where is the Eiffel Tower located?"), 2, null);
 
         assertThat(answer.answer()).isNotBlank();
         assertThat(answer.answer()).isNotEqualTo("Sorry, I don't have an answer for that question");
@@ -65,7 +65,7 @@ class DocumentAiRepositoryIT {
 
     @Test
     void givenNoDocuments_whenAskQuestion_thenFallbackAnswerReturned() {
-        Answer answer = repository.askQuestion(new Question("What is the capital of Atlantis?"));
+        Answer answer = repository.askQuestion(new Question("What is the capital of Atlantis?"), 2, null);
 
         assertThat(answer.answer()).isEqualTo("Sorry, I don't have an answer for that question");
     }

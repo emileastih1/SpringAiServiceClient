@@ -15,8 +15,8 @@ public class DocumentDocumentAiAdapter implements DocumentAiClientRepository {
         this.documentAiRepository = documentAiRepository;
     }
     @Override
-    public Answer askQuestion(Question question) {
-        return documentAiRepository.askQuestion(question);
+    public Answer askQuestion(Question question, int topK, Double temperature) {
+        return documentAiRepository.askQuestion(question, topK, temperature);
     }
 
     @Override

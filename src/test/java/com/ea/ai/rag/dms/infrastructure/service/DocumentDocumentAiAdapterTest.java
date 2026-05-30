@@ -27,12 +27,12 @@ class DocumentDocumentAiAdapterTest {
     void askQuestion_delegatesCallToDocumentAiRepository_andReturnsAnswer() {
         Question question = new Question("What is the document about?");
         Answer expectedAnswer = new Answer("The document is about testing.");
-        when(documentAiRepository.askQuestion(question)).thenReturn(expectedAnswer);
+        when(documentAiRepository.askQuestion(question, 2, null)).thenReturn(expectedAnswer);
 
-        Answer result = documentDocumentAiAdapter.askQuestion(question);
+        Answer result = documentDocumentAiAdapter.askQuestion(question, 2, null);
 
         assertThat(result).isEqualTo(expectedAnswer);
-        verify(documentAiRepository).askQuestion(question);
+        verify(documentAiRepository).askQuestion(question, 2, null);
     }
 
     @Test

@@ -27,12 +27,12 @@ class AiServiceClientImplTest {
     void askQuestion_delegatesCallToRepository_andReturnsAnswer() {
         Question question = new Question("What is the document about?");
         Answer expectedAnswer = new Answer("The document is about testing.");
-        when(documentAiClientRepository.askQuestion(question)).thenReturn(expectedAnswer);
+        when(documentAiClientRepository.askQuestion(question, 2, null)).thenReturn(expectedAnswer);
 
-        Answer result = aiServiceClientImpl.askQuestion(question);
+        Answer result = aiServiceClientImpl.askQuestion(question, 2, null);
 
         assertThat(result).isEqualTo(expectedAnswer);
-        verify(documentAiClientRepository).askQuestion(question);
+        verify(documentAiClientRepository).askQuestion(question, 2, null);
     }
 
     @Test

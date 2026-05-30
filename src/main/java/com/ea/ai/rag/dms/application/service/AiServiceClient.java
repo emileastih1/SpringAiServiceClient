@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public interface AiServiceClient {
-    Answer askQuestion(Question question);
+    Answer askQuestion(Question question, int topK, Double temperature);
 
     void addDocumentToVectorStore(Document document);
 }

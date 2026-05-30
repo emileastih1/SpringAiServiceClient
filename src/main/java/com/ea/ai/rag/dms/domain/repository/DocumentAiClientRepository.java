@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DocumentAiClientRepository {
-    Answer askQuestion(Question question);
+    Answer askQuestion(Question question, int topK, Double temperature);
 
     void addDocumentToVectorStore(Document document);
 }

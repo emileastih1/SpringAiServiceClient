@@ -17,8 +17,8 @@ public class AiServiceClientImpl implements AiServiceClient {
     }
 
     @Override
-    public Answer askQuestion(Question question) {
-        return documentAiClientRepository.askQuestion(question);
+    public Answer askQuestion(Question question, int topK, Double temperature) {
+        return documentAiClientRepository.askQuestion(question, topK, temperature);
     }
 
     @Override

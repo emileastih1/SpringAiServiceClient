@@ -21,6 +21,7 @@ import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.mockito.ArgumentCaptor;
 
 
 class DocumentAiRepositoryTest {
@@ -43,7 +44,7 @@ class DocumentAiRepositoryTest {
         Question question = new Question("Unknown topic");
         when(vectorStore.similaritySearch(any(SearchRequest.class))).thenReturn(List.of());
 
-        Answer result = documentAiRepository.askQuestion(question);
+        Answer result = documentAiRepository.askQuestion(question, 2, null);
 
         assertThat(result.answer()).isEqualTo("Sorry, I don't have an answer for that question");
     }
@@ -53,7 +54,7 @@ class DocumentAiRepositoryTest {
         Question question = new Question("Unknown topic");
         when(vectorStore.similaritySearch(any(SearchRequest.class))).thenReturn(null);
 
-        Answer result = documentAiRepository.askQuestion(question);
+        Answer result = documentAiRepository.askQuestion(question, 2, null);
 
         assertThat(result.answer()).isEqualTo("Sorry, I don't have an answer for that question");
     }
@@ -69,7 +70,7 @@ class DocumentAiRepositoryTest {
         when(promptTemplate.create(anyMap())).thenReturn(prompt);
         when(chatModel.call(prompt).getResult().getOutput().getText()).thenReturn("The document is about testing.");
 
-        Answer result = documentAiRepository.askQuestion(question);
+        Answer result = documentAiRepository.askQuestion(question, 2, null);
 
         assertThat(result.answer()).isEqualTo("The document is about testing.");
         verify(promptTemplate).create(any(Map.class));
@@ -91,8 +92,19 @@ class DocumentAiRepositoryTest {
         Question question = new Question("What is the document about?");
         when(vectorStore.similaritySearch(any(SearchRequest.class))).thenReturn(List.of());
 
-        documentAiRepository.askQuestion(question);
+        documentAiRepository.askQuestion(question, 2, null);
 
         verify(vectorStore).similaritySearch(any(SearchRequest.class));
+    }
+
+    @Test
+    void askQuestion_uses_topK_from_parameter() {
+        Question question = new Question("What is the document about?");
+        ArgumentCaptor<SearchRequest> captor = ArgumentCaptor.forClass(SearchRequest.class);
+        when(vectorStore.similaritySearch(captor.capture())).thenReturn(List.of());
+
+        documentAiRepository.askQuestion(question, 5, null);
+
+        assertThat(captor.getValue().getTopK()).isEqualTo(5);
     }
 }

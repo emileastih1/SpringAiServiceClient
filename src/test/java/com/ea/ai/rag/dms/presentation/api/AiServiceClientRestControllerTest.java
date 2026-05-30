@@ -19,8 +19,12 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -49,7 +53,7 @@ class AiServiceClientRestControllerTest {
     @Test
     void askQuestion_withValidQuestion_returns200WithAnswer() throws Exception {
         Question question = new Question("What is the document about?");
-        when(aiServiceClient.askQuestion(any(Question.class))).thenReturn(new Answer("The document is about testing."));
+        when(aiServiceClient.askQuestion(any(Question.class), anyInt(), any())).thenReturn(new Answer("The document is about testing."));
 
         mockMvc.perform(post("/v1/document/ask")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -71,7 +75,7 @@ class AiServiceClientRestControllerTest {
     @Test
     void askQuestion_whenServiceThrowsFunctionalException_returns400WithErrorCode() throws Exception {
         Question question = new Question("What is the document about?");
-        when(aiServiceClient.askQuestion(any(Question.class)))
+        when(aiServiceClient.askQuestion(any(Question.class), anyInt(), any()))
                 .thenThrow(new FunctionalException(MessageCode.DOCUMENT_NOT_FOUND, "Document not found"));
 
         mockMvc.perform(post("/v1/document/ask")
@@ -79,6 +83,30 @@ class AiServiceClientRestControllerTest {
                         .content(objectMapper.writeValueAsString(question)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errorCode").value("DOCUMENT_NOT_FOUND"));
+    }
+
+    @Test
+    void askQuestion_withNoTopKParam_defaultsTopKToTwo() throws Exception {
+        when(aiServiceClient.askQuestion(any(Question.class), anyInt(), any())).thenReturn(new Answer("answer"));
+
+        mockMvc.perform(post("/v1/document/ask")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"question\":\"What is this?\"}"))
+                .andExpect(status().isOk());
+
+        verify(aiServiceClient).askQuestion(any(Question.class), eq(2), isNull());
+    }
+
+    @Test
+    void askQuestion_withTopKParam_passesTopKToService() throws Exception {
+        when(aiServiceClient.askQuestion(any(Question.class), anyInt(), any())).thenReturn(new Answer("answer"));
+
+        mockMvc.perform(post("/v1/document/ask?topK=5")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"question\":\"What is this?\"}"))
+                .andExpect(status().isOk());
+
+        verify(aiServiceClient).askQuestion(any(Question.class), eq(5), isNull());
     }
 
     @Test
