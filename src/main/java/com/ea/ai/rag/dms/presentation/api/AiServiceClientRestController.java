@@ -82,4 +82,18 @@ public class AiServiceClientRestController {
         String sentiment = aiServiceClient.classifySentiment(content);
         return ResponseEntity.ok(Map.of("sentiment", sentiment));
     }
+
+    @Operation(
+            summary = "Embed document content (content-first, no Tika)",
+            description = "Splits plain text, tags chunks with documentId, embeds in vector store (ADR-0004)",
+            responses = {@ApiResponse(responseCode = "200", description = "ok")}
+    )
+    @PostMapping(value = "/v1/document/embed-content", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> embedContent(@RequestBody Map<String, String> body) {
+        long documentId = Long.parseLong(body.get("documentId"));
+        String documentName = body.getOrDefault("documentName", "");
+        String content = body.getOrDefault("content", "");
+        aiServiceClient.embedContent(documentId, documentName, content);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

@@ -47,4 +47,9 @@ public class DocumentDocumentAiAdapter implements DocumentAiClientRepository {
     public String classifySentiment(String content) {
         return documentAiRepository.classifySentiment(content);
     }
+
+    @Override
+    public void embedContent(long documentId, String documentName, String content) {
+        documentAiRepository.embedContent(documentId, documentName, content);
+    }
 }

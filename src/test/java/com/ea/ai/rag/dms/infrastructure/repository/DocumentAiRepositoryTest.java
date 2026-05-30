@@ -32,6 +32,7 @@ class DocumentAiRepositoryTest {
     private VectorStore vectorStore;
     private PromptTemplate promptTemplate;
     private ChatModel chatModel;
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
     private DocumentAiRepository documentAiRepository;
 
     @BeforeEach
@@ -39,7 +40,8 @@ class DocumentAiRepositoryTest {
         vectorStore = mock(VectorStore.class);
         promptTemplate = mock(PromptTemplate.class);
         chatModel = mock(ChatModel.class, Answers.RETURNS_DEEP_STUBS);
-        documentAiRepository = new DocumentAiRepository(vectorStore, promptTemplate, chatModel);
+        jdbcTemplate = mock(org.springframework.jdbc.core.JdbcTemplate.class);
+        documentAiRepository = new DocumentAiRepository(vectorStore, promptTemplate, chatModel, jdbcTemplate);
     }
 
     @Test
@@ -77,6 +79,36 @@ class DocumentAiRepositoryTest {
 
         assertThat(result.answer()).isEqualTo("The document is about testing.");
         verify(promptTemplate).create(any(Map.class));
+    }
+
+    // -------------------------------------------------------------------------
+    // embedContent — content-first embedding path (no Tika, plain text, ADR-0004)
+    // -------------------------------------------------------------------------
+
+    @Test
+    void embedContent_addsChunksTaggedWithDocumentIdToVectorStore() {
+        ArgumentCaptor<List<org.springframework.ai.document.Document>> captor =
+                ArgumentCaptor.forClass(List.class);
+
+        documentAiRepository.embedContent(42L, "My Note", "Hello from authored content");
+
+        verify(vectorStore).add(captor.capture());
+        List<org.springframework.ai.document.Document> chunks = captor.getValue();
+        assertThat(chunks).isNotEmpty();
+        chunks.forEach(chunk ->
+                assertThat(chunk.getMetadata().get("documentId"))
+                        .as("Every chunk must carry the documentId metadata for scoped RAG")
+                        .isEqualTo("42"));
+    }
+
+    @Test
+    void embedContent_doesNotUseTika_splitsPlainTextDirectly() {
+        // embedContent skips Tika — passing plain text must still produce chunks
+        String plainText = "This is plain authored text. ".repeat(50);
+
+        documentAiRepository.embedContent(7L, "Note", plainText);
+
+        verify(vectorStore).add(any(List.class));
     }
 
     @Test

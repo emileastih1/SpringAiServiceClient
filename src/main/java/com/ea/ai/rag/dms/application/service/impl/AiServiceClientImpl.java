@@ -48,4 +48,9 @@ public class AiServiceClientImpl implements AiServiceClient {
     public String classifySentiment(String content) {
         return documentAiClientRepository.classifySentiment(content);
     }
+
+    @Override
+    public void embedContent(long documentId, String documentName, String content) {
+        documentAiClientRepository.embedContent(documentId, documentName, content);
+    }
 }

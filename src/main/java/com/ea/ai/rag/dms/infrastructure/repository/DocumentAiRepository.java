@@ -44,6 +44,27 @@ public class DocumentAiRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    // Content-first embedding: splits plain text, tags chunks, no Tika (ADR-0004)
+    public void embedContent(long documentId, String documentName, String content) {
+        org.springframework.ai.document.Document doc =
+                org.springframework.ai.document.Document.builder()
+                        .text(content)
+                        .metadata(Map.of("source", documentName))
+                        .build();
+
+        TextSplitter textSplitter = TokenTextSplitter.builder()
+                .withChunkSize(400)
+                .withMinChunkSizeChars(50)
+                .withMaxNumChunks(1000)
+                .withKeepSeparator(true)
+                .build();
+
+        List<org.springframework.ai.document.Document> chunks = textSplitter.apply(List.of(doc));
+        String docIdStr = String.valueOf(documentId);
+        chunks.forEach(chunk -> chunk.getMetadata().put(DOCUMENT_ID_META, docIdStr));
+        vectorStore.add(chunks);
+    }
+
     public void addDocumentToVectorStore(Document document) {
         ByteArrayResource byteArrayResource = new ByteArrayResource(document.getFile(), document.getDocumentName());
         TikaDocumentReader tikaDocumentReader = new TikaDocumentReader(byteArrayResource);

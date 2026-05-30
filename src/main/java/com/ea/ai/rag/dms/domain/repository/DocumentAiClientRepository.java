@@ -21,4 +21,6 @@ public interface DocumentAiClientRepository {
     void deleteChunksByDocumentId(long documentId);
 
     String classifySentiment(String content);
+
+    void embedContent(long documentId, String documentName, String content);
 }
